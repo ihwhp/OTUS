@@ -29,6 +29,10 @@ Vagrant.configure("2") do |config|
             systemctl restart sshd
           SHELL
 
+          box.vm.provision "ansible" do |ansible|
+            ansible.playbook = "Playbooks/nginx.yml"
+            ansible.become = "true"
+          end
       end
   end
 end
