@@ -113,8 +113,60 @@ semodule -i nginx.pp
 ```
 ### Выводы по 1 части:
 Мы запустили nginx на нестандартном порту 3мя разными спосабами
-*[x] setsebool
-*[x] semanage
-*[x] semodule
+* [x] setsebool
+* [x] semanage
+* [x] semodule
 
 ## 2 Часть
+Проверим права named на смену зон:
+```
+[root@ns01 ~]# getsebool -a | grep named
+named_tcp_bind_http_port --> off
+named_write_master_zones --> on
+```
+Проанализируем audit.log:
+```
+[root@ns01 ~]# cat /var/log/audit/audit.log | audit2why
+type=AVC msg=audit(1666871901.448:1901): avc:  denied  { create } for  pid=5103 comm="isc-worker0000" name="named.ddns.lab.view1.jnl" scontext=system_u:system_r:named_t:s0 tcontext=system_u:object_r:etc_t:s0 tclass=file permissive=0
+	Was caused by:
+		Missing type enforcement (TE) allow rule.
+		You can use audit2allow to generate a loadable module to allow this access.
+```
+Изменим тип контекста безопасности для каталога /etc/named:
+```
+sudo chcon -R -t named_zone_t /etc/named
+```
+Перезагрузимся и проверим:
+```
+[vagrant@client ~]$ nsupdate -k /etc/named.zonetransfer.key
+> quit    
+[vagrant@client ~]$ nsupdate -k /etc/named.zonetransfer.key
+> server 192.168.50.10
+> zone ddns.lab       
+> update add www.ddns.lab. 60 A 192.168.50.15
+> sent
+incorrect section name: sent
+> send
+> quit
+[vagrant@client ~]$ dig www.ddns.lab
+
+; <<>> DiG 9.11.4-P2-RedHat-9.11.4-26.P2.el7_9.10 <<>> www.ddns.lab
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 631
+;; flags: qr rd ra ad; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 512
+;; QUESTION SECTION:
+;www.ddns.lab.			IN	A
+
+;; AUTHORITY SECTION:
+.			86399	IN	SOA	a.root-servers.net. nstld.verisign-grs.com. 2022102700 1800 900 604800 86400
+
+;; Query time: 26 msec
+;; SERVER: 10.0.2.3#53(10.0.2.3)
+;; WHEN: Thu Oct 27 12:19:53 UTC 2022
+;; MSG SIZE  rcvd: 116
+```
+
