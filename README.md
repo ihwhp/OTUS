@@ -113,8 +113,8 @@ semodule -i nginx.pp
 ```
 ### Выводы по 1 части:
 Мы запустили nginx на нестандартном порту 3мя разными спосабами
-[x] setsebool
-[x] semanage
-[x] semodule
+*[x] setsebool
+*[x] semanage
+*[x] semodule
 
 ## 2 Часть
