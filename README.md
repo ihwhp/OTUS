@@ -1,4 +1,4 @@
-## 1
+## 1 Часть
     
 После запуска vm через vagrant up nginx не стартует:
 ```
@@ -111,3 +111,10 @@ semodule -i nginx.pp
            ├─3448 nginx: master process /usr/sbin/nginx
            └─3450 nginx: worker process
 ```
+### Выводы по 1 части:
+Мы запустили nginx на нестандартном порту 3мя разными спосабами
+[x] setsebool
+[x] semanage
+[x] semodule
+
+## 2 Часть
