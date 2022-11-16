@@ -1,0 +1,142 @@
+---
+- name: Set up PXE Server
+  hosts: pxeserver
+  become: true
+
+  tasks:
+
+    - name: Set up | Repo Replace
+      replace:
+        path: "{{ item }}"
+        regexp: 'mirrorlist'
+        replace: '#mirrorlist'
+      with_items:
+        - /etc/yum.repos.d/CentOS-Linux-AppStream.repo
+        - /etc/yum.repos.d/CentOS-Linux-BaseOS.repo
+
+    - name: Set up | Repo Replace
+      replace:
+        path: "{{ item }}"
+        regexp: '#baseurl=http://mirror.centos.org'
+        replace: 'baseurl=http://vault.centos.org'
+      with_items:
+        - /etc/yum.repos.d/CentOS-Linux-AppStream.repo
+        - /etc/yum.repos.d/CentOS-Linux-BaseOS.repo
+
+    - name: Install | Software
+      yum:
+        name:
+          - vim
+          - wget
+          - epel-release
+          - httpd
+          - tftp-server
+          - dhcp-server
+        state: present
+        update_cache: true
+
+    - name: Download ISO image | AlmaLinux 8.6
+      synchronize:
+        mode: push
+        src: isos/
+        dest: /root/isos
+        private_key: vagrant/machines/inetRouter/virtualbox/private_key
+
+    - name: Create | ISO directory
+      file:
+        path: /iso
+        state: directory
+        mode: '0755'
+
+    - name: Mount | ISO image
+      mount:
+        path: /mnt
+        src: /root/isos/AlmaLinux-8.6-x86_64-dvd.iso
+        fstype: iso9660
+        opts: ro,loop
+        state: mounted
+
+    - name: Copy | ALL files from /mnt to /iso
+      copy:
+        src: /mnt/
+        dest: /iso
+        remote_src: yes
+        directory_mode: yes
+
+    - name: Copy | httpd config
+      template:
+        src: pxeboot.conf
+        dest: /etc/httpd/conf.d/pxeboot.conf
+        owner: root
+        group: root
+        mode: '0640'
+
+    - name: Restart | httpd
+      service:
+        name: httpd
+        state: restarted
+        enabled: true
+
+    - name: Create | TFTP directory
+      file:
+        path: /var/lib/tftpboot/pxelinux.cfg
+        state: directory
+        mode: '0755'
+
+    - name: Copy | pxelinux
+      template:
+        src: default
+        dest: /var/lib/tftpboot/pxelinux.cfg/default
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy files to TFTP | Menu
+      copy:
+        src: templates/tftpboot/{{ item }}
+        dest: /var/lib/tftpboot/{{ item }}
+        mode: '0644'
+        remote_src: no
+      with_items:
+        - pxelinux.0
+        - ldlinux.c32
+        - libmenu.c32
+        - libutil.c32
+        - menu.c32
+        - vesamenu.c32
+
+    - name: Copy files to TFTP | Core
+      copy:
+        src: /iso/images/pxeboot/{{ item }}
+        dest: /var/lib/tftpboot/{{ item }}
+        mode: '0644'
+        remote_src: true
+      with_items:
+        - initrd.img
+        - vmlinuz
+
+    - name: Restart | tftp-server
+      service:
+        name: tftp.service
+        state: restarted
+        enabled: true
+    
+    - name: Copy | dhcp-server conf
+      template:
+        src: dhcpd.conf
+        dest: /etc/dhcp/dhcpd.conf
+        mode: '0644'
+
+    - name: Restart | dhcp-server
+      service:
+        name: dhcpd
+        state: restarted
+        enabled: true
+    
+    - name: copy ks.cfg
+      template:
+        src: ks.cfg
+        dest: /iso/ks.cfg
+        owner: root
+        group: root
+        mode: '0755'
