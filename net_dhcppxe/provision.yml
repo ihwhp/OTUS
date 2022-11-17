@@ -35,12 +35,12 @@
         state: present
         update_cache: true
 
-    - name: Download ISO image | AlmaLinux 8.6
-      synchronize:
-        mode: push
-        src: isos/
-        dest: /root/isos
-        private_key: vagrant/machines/inetRouter/virtualbox/private_key
+    - name: Copy ISO image | AlmaLinux 8.6
+      copy:
+        src: isos/AlmaLinux-8.6-x86_64-dvd.iso
+        dest: ~/AlmaLinux-8.6-x86_64-dvd.iso
+        remote_src: no
+        mode: '0755'
 
     - name: Create | ISO directory
       file:
@@ -51,7 +51,7 @@
     - name: Mount | ISO image
       mount:
         path: /mnt
-        src: /root/isos/AlmaLinux-8.6-x86_64-dvd.iso
+        src: /root/AlmaLinux-8.6-x86_64-dvd.iso
         fstype: iso9660
         opts: ro,loop
         state: mounted
