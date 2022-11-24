@@ -79,5 +79,5 @@ box.vm.network "forwarded_port", guest: 8080, host: 8888, host_ip: "127.0.0.1", 
         to_source: 192.168.255.12
       become: yes
 ```
-**Вывод `curl` с хостовой машины**:
+**Вывод `curl` с хостовой машины**:  
 ![curl](https://user-images.githubusercontent.com/105001717/203731234-658c288e-44c1-4b62-b77c-82fb9998cb38.png)
