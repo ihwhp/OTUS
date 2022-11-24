@@ -1,7 +1,8 @@
 ## ДЗ сценарии iptables
 
 ### Реализовать knocking port
-Импорт правил **iptables** через файл `iptables.rules` и выполнения `iptables-restore`
+Импорт правил **iptables** на **inet1Router** через файл `iptables.rules` и выполнения `iptables-restore`  
+_см. inet1Router.yml_
 ```
 *nat
 :PREROUTING ACCEPT [0:0]
