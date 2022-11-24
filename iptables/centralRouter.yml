@@ -1,0 +1,50 @@
+---
+- name: Set up Central Router
+  hosts: centralRouter
+  become: true
+
+  tasks:
+
+    - name: Configure | Sysctl | Forwarding
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: 1
+        sysctl_set: yes
+        state: present
+        reload: yes
+
+    - name: Install | Software
+      yum:
+        name:
+          - epel-release
+          - nmap
+        state: present
+        update_cache: true
+
+    - name: Configure | GW Reset
+      shell: echo "DEFROUTE=no" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+      notify:
+        - NetRestart
+
+    - name: Configure | Eth1
+      nmcli:
+        conn_name: "System eth1"
+        type: ethernet
+        ifname: eth1
+        gw4: 192.168.255.11
+        state: present
+      notify:
+        - NetRestart
+  
+    - name: Copy | knock.sh
+      copy:
+        src: knock.sh
+        dest: ~/knock.sh
+        remote_src: no
+        mode: '0755'
+
+  handlers:
+    - name: NetRestart
+      ansible.builtin.systemd:
+        name: network
+        state: restarted

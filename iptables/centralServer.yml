@@ -1,0 +1,39 @@
+---
+- name: Configure Central Server
+  hosts: centralServer
+  become: true
+  tasks:
+
+    - name: Install | Software
+      yum:
+        name:
+          - epel-release
+          - nginx
+        state: present
+        update_cache: true
+      notify:
+          - Nginx
+
+    - name: Configure | Eth1
+      nmcli:
+        conn_name: "System eth1"
+        type: ethernet
+        ifname: eth1
+        gw4: 192.168.0.1
+        state: present
+
+    - name: Configure | Eth0 NoDefRoute
+      shell: echo "DEFROUTE=no" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+      notify:
+        - NetRestart
+
+  handlers:
+    - name: NetRestart
+      ansible.builtin.systemd:
+        name: network
+        state: restarted
+    
+    - name: Nginx
+      service:
+        name: nginx
+        state: started

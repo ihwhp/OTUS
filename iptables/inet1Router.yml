@@ -1,0 +1,52 @@
+---
+- name: Setup Inet Router 1
+  hosts: inet1Router
+  become: true
+  tasks:
+    - name: Configure | Sysctl | Forwarding
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: 1
+        sysctl_set: yes
+        state: present
+        reload: yes
+
+    - name: iptables flush filter
+      iptables:
+        chain: "{{ item }}"
+        flush: yes
+      with_items:  [ 'INPUT', 'FORWARD', 'OUTPUT' ]
+
+    - name: Copy | Iptables Rules
+      copy:
+        src: inet1Router.iptables.rules
+        dest: /etc/iptables.rules
+        remote_src: no
+        mode: '0755'
+
+    - name: Configure | Routes
+      shell: iptables-restore < /etc/iptables.rules    
+
+    - name: Configure | Routes
+      shell: bash -c 'echo "192.168.0.0/24 via 192.168.255.1 dev eth1" > /etc/sysconfig/network-scripts/route-eth1'
+      notify:
+      - NetRestart
+
+    - name: Configure | SSHD
+      replace:
+        path: /etc/ssh/sshd_config
+        regexp: 'PasswordAuthentication no'
+        replace: 'PasswordAuthentication yes'
+      notify:
+        - sshd
+
+  handlers:
+    - name: NetRestart
+      ansible.builtin.systemd:
+        name: network
+        state: restarted
+    
+    - name: sshd
+      service:
+        name: sshd
+        state: restarted

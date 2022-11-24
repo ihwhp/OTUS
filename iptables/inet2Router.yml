@@ -1,0 +1,70 @@
+---
+- name: Setup Inet Router 2
+  hosts: inet2Router
+  become: true
+  tasks:
+    - name: Configure | Sysctl | Forwarding
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: 1
+        sysctl_set: yes
+        state: present
+        reload: yes
+
+    - name: iptables | Flush filter
+      iptables:
+        chain: "{{ item }}"
+        flush: yes
+      with_items:  [ 'INPUT', 'FORWARD', 'OUTPUT' ]
+
+    - name: iptables | Flush nat
+      iptables:
+        table: nat
+        chain: '{{ item }}'
+        flush: yes
+      with_items: [ 'INPUT', 'OUTPUT', 'PREROUTING', 'POSTROUTING' ]
+
+    - name: iptables | NAT
+      iptables:
+        table: nat
+        chain: PREROUTING
+        in_interface: eth0
+        protocol: tcp
+        match: tcp
+        destination_port: 8080
+        jump: DNAT
+        to_destination: 192.168.0.2:80
+      become: yes
+
+    - name: iptables | NAT
+      iptables:
+        table: nat
+        chain: POSTROUTING
+        destination: 192.168.0.2/32
+        jump: SNAT
+        to_source: 192.168.255.12
+      become: yes
+
+    - name: Configure | Routes
+      shell: bash -c 'echo "192.168.0.0/24 via 192.168.255.1 dev eth1" > /etc/sysconfig/network-scripts/route-eth1'
+
+    - name: Configure | GW Reset
+      shell: echo "DEFROUTE=no" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+      notify:
+        - NetRestart
+
+    - name: Configure | Eth1
+      nmcli:
+        conn_name: "System eth1"
+        type: ethernet
+        ifname: eth1
+        gw4: 192.168.255.11
+        state: present
+      notify:
+        - NetRestart
+
+  handlers:
+    - name: NetRestart
+      ansible.builtin.systemd:
+        name: network
+        state: restarted
