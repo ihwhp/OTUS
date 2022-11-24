@@ -46,7 +46,9 @@ COMMIT
 ```
 ssh vagrant@192.168.255.11
 ```
+![iptables_knock](https://user-images.githubusercontent.com/105001717/203731186-108c7be0-4bd9-4198-b7bf-9f9bca5508db.png)
 
+  
 ## Проброс порта
 Порт с локальной машины пробрасываем в Vagrantfile  
 ```
@@ -78,3 +80,4 @@ box.vm.network "forwarded_port", guest: 8080, host: 8888, host_ip: "127.0.0.1", 
       become: yes
 ```
 **Вывод `curl` с хостовой машины**:
+![curl](https://user-images.githubusercontent.com/105001717/203731234-658c288e-44c1-4b62-b77c-82fb9998cb38.png)
