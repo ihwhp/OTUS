@@ -161,12 +161,12 @@ Neighbor ID     Pri State           Dead Time Address         Interface         
 
 Внесем в ansible-provisioning и templates соответствующие дополнения
 ```
- {% if r_hostname == 'r1' %}
- ip ospf bfd
- {% else r_hostaname == 'r2'%}
- ip ospf bfd
- {% else %}
- !ip ospf bfd
- {% endif %}
+{% if ansible_hostname == 'router1' %}
+ip ospf bfd
+{% elif ansible_hostname == 'router2' %}
+ip ospf bfd
+{% else %}
+!ip ospf bfd
+{% endif %}
  ```
  и bfdd.conf.j2
