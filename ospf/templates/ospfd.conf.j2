@@ -1,0 +1,39 @@
+hostname {{ r_hostaname }}
+log file /var/log/frr/frr.log
+!
+!
+!
+!
+!
+interface enp0s8
+ description {{ enp0s8_desc }}
+ ip ospf cost {{ enp0s8_cost }}
+ {% if ansible_hostname == 'router1' %}ip ospf bfd{% elif ansible_hostname == 'router2' %}ip ospf bfd{% else %}!ip ospf bfd{% endif %}
+ ip ospf hello-interval 10
+ ip ospf dead-interval 30
+ ip ospf mtu-ignore
+!
+interface enp0s9
+ description {{ enp0s9_desc }}
+ ip ospf cost {{ enp0s8_cost }}
+ ip ospf hello-interval 10
+ ip ospf dead-interval 30
+ ip ospf mtu-ignore
+!
+interface enp0s10
+ description {{ enp0s10_desc }}
+ ip ospf hello-interval 10
+ ip ospf dead-interval 30
+ ip ospf mtu-ignore
+!
+router ospf
+ ospf router-id {{ router_id }}
+ network {{ net_1 }} area 0
+ network {{ net_2 }} area 0
+ network {{ internal_net_1 }} area 0
+ neighbor {{ neighbor_1 }}
+ neighbor {{ neighbor_1 }}
+!
+!
+!
+line vty

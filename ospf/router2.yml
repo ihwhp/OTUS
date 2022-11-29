@@ -1,0 +1,88 @@
+---
+- name: Setup ospf
+  hosts: router2
+  become: yes
+
+  vars:
+    r_hostaname: 'r2'
+    enp0s8_desc: 'r2-r1'
+    enp0s9_desc: 'r2-r3'
+    enp0s10_desc: 'net_router2'
+    enp0s8_cost: '100'
+    enp0s9_cost: '100'
+    router_id: '2.2.2.2'
+    net_1: '10.0.10.0/30'
+    net_2: '10.0.11.0/30'
+    internal_net_1: '192.168.20.0/24'
+    neighbor_1: '10.0.10.1'
+    neighbor_2: '10.0.11.1'
+    enp0s8_ip: '10.0.10.2'
+    enp0s9_ip: '10.0.11.2'
+    enp0s10_ip: '192.168.20.1'
+    bfd_peer: '10.0.10.1'
+  
+  tasks:
+    - name: Install | Software
+      dnf:
+        name:
+          - frr
+          - mtr
+        state: present
+        
+    - name: Enable | ip_forward
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: yes
+        state: present
+        reload: yes
+
+    - name: Disable | rp_filter
+      sysctl:
+        name: net.ipv4.conf.all.rp_filter
+        value: '0'
+        sysctl_set: yes
+        state: present
+        reload: yes
+        
+    - name: Replace | FRR Daemons
+      replace:
+        path: /etc/frr/daemons
+        regexp: 'ospfd=no'
+        replace: 'ospfd=yes'
+
+    - name: Replace | FRR Daemons
+      replace:
+        path: /etc/frr/daemons
+        regexp: 'bfdd=no'
+        replace: 'bfdd=yes'
+
+    - name: Manage | Zebra.conf
+      template:
+        src: templates/zebra.conf.j2
+        dest: /etc/frr/zebra.conf
+        owner: frr
+        group: frr
+        mode: 0640
+
+    - name: Manage | Ospfd.conf
+      template:
+        src: templates/ospfd.conf.j2
+        dest: /etc/frr/ospfd.conf
+        owner: frr
+        group: frr
+        mode: 0640
+
+    - name: Manage | Bfd.conf
+      template:
+        src: templates/bfdd.conf.j2
+        dest: /etc/frr/bfdd.conf
+        owner: frr
+        group: frr
+        mode: 0640
+
+    - name: Enable | FRR
+      command: systemctl enable frr
+
+    - name: Restart | FRR
+      command: systemctl restart frr

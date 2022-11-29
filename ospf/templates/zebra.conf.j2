@@ -1,0 +1,26 @@
+hostname {{ r_hostaname }}
+log file /var/log/frr/frr.log
+!
+!
+!
+!
+interface enp0s8
+ description {{ enp0s8_desc }}
+ ip address {{ enp0s8_ip }}
+!
+interface enp0s9
+ description {{ enp0s9_desc }}
+ ip address {{ enp0s9_ip }}
+!
+interface enp0s10
+ description {{ enp0s10_desc }}
+ ip address {{ enp0s10_ip }}
+!
+!
+!
+no ipv6 forwarding
+!
+!
+!
+line vty
+!

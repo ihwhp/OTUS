@@ -1,0 +1,13 @@
+hostname {{ r_hostaname }}
+!
+!
+!
+!
+line vty
+!
+!
+bfd
+ peer {{ bfd_peer }}
+  no shutdown
+ !
+!
