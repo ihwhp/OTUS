@@ -1,0 +1,5 @@
+#!/bin/bash
+
+dnf install epel-release
+dnf install ocserv
+sudo bash -c 'echo "net.ipv4.conf.all.forwarding=1" >> /etc/sysctl.conf'; sudo sysctl -p

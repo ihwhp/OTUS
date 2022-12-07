@@ -8,7 +8,13 @@ log file /var/log/frr/frr.log
 interface enp0s8
  description {{ enp0s8_desc }}
  ip ospf cost {{ enp0s8_cost }}
- {% if ansible_hostname == 'router1' %}ip ospf bfd{% elif ansible_hostname == 'router2' %}ip ospf bfd{% else %}!ip ospf bfd{% endif %}
+ {% if ansible_hostname == 'router1' %}
+ ip ospf bfd
+ {% elif ansible_hostname == 'router2' %}
+ ip ospf bfd
+ {% else %}
+ !ip ospf bfd
+ {% endif %}
  ip ospf hello-interval 10
  ip ospf dead-interval 30
  ip ospf mtu-ignore

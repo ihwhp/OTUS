@@ -1,0 +1,27 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+    config.vm.box = "almalinux/8"
+
+    config.vm.provision "ansible" do |ansible|
+        ansible.playbook = "provision/provision.yml"
+        ansible.become = "true"
+    end
+    
+    config.vm.define "server" do |server|
+    server.vm.hostname = "server"
+    server.vm.network "private_network", ip: "192.168.10.10"
+    server.vm.provider :virtualbox do |vb|
+        vb.name = "server"
+        end
+    end
+    
+    config.vm.define "client" do |client|
+    client.vm.hostname = "client"
+    client.vm.network "private_network", ip: "192.168.10.20"
+    client.vm.provider :virtualbox do |vb|
+        vb.name = "client"
+        end
+    end
+end

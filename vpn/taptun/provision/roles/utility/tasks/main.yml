@@ -1,0 +1,12 @@
+---
+- name: Install Epel
+  dnf:
+    name: epel-release
+    state: latest
+
+- name: Install Utils
+  dnf:
+    name:
+      - openvpn
+      - iperf3
+    state: latest

@@ -1,0 +1,27 @@
+---
+- name: Disable SELinux
+  selinux:
+    policy: targeted
+    state: disabled
+
+- name: Enable forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Copy Openvpn configs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/openvpn/server
+    remote_src: no
+  loop:
+      - server.conf
+      - static.key
+
+- name: Start OpenVPN
+  systemd:
+    name: 'openvpn-server@server'
+    state: started

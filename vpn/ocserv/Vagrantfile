@@ -1,0 +1,22 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+
+
+Vagrant.configure(2) do |config|
+    config.vm.box = "almalinux/8"
+
+    #config.vm.provision "ansible" do |ansible|
+    #    ansible.playbook = "provision/provision.yml"
+    #    ansible.become = "true"
+    #end
+    
+    config.vm.define "server" do |server|
+    server.vm.hostname = "server"
+    server.vm.network "forwarded_port", host: 4433, guest: 443, host_ip: "127.0.0.1"
+    server.vm.network "private_network", ip: "192.168.10.1", adapter: 2, netmask: "255.255.255.0"
+    server.vm.provider :virtualbox do |vb|
+        vb.name = "server"
+        end
+    end
+end

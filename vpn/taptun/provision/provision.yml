@@ -1,0 +1,15 @@
+---
+- hosts: client, server
+  become: true
+  roles:
+    - utility
+
+- hosts: server
+  become: true
+  roles:
+    - vpnserver
+
+- hosts: client
+  become: true
+  roles:
+    - vpnclient
