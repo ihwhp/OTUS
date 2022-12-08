@@ -10,4 +10,5 @@
 ### Ссылки:  
 https://www.linuxbabe.com/ubuntu/openconnect-vpn-server-ocserv-ubuntu-20-04-lets-encrypt  
 https://habr.com/ru/post/495708/  
-https://interface31.ru/tech_it/2022/04/nastraivaem-openconnect-sovmestimyy-s-cisco-anyconnect-vpn-server-na-platforme-linux.html
+https://interface31.ru/tech_it/2022/04/nastraivaem-openconnect-sovmestimyy-s-cisco-anyconnect-vpn-server-na-platforme-linux.html  
+https://www.mankier.com/8/ocserv
