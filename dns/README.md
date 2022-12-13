@@ -41,11 +41,11 @@ acl client2 { 192.168.50.16; };
  In place of explicit addresses, one or more named masters lists can be used.
 ```
 В файлах `master-named.conf` и `slave-named.conf` внесем зоны в соответствующие секции `view`  
-**зона `any` должна всегда находиться в самом низу**
+**Зона `any` должна всегда находиться в самом низу**
 
 ### 3. Проверяем  
   
-#### Проверка с client
+#### Проверка с client:
 ```
 [vagrant@client ~]$ dig @192.168.50.10 web1.dns.lab
 
@@ -100,9 +100,71 @@ dns.lab.		600	IN	SOA	ns01.dns.lab. root.dns.lab. 2711201407 3600 600 86400 600
 ;; MSG SIZE  rcvd: 87
 ```
 
-**Как видим ответа на запро web2 нет**
+**Ответа на запроc web2 нет**
 
 ### Проверяем с client2:  
+```
+[vagrant@client2 ~]$ dig @192.168.50.10 web1.dns.lab
+
+; <<>> DiG 9.11.4-P2-RedHat-9.11.4-26.P2.el7_9.10 <<>> @192.168.50.10 web1.dns.lab
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 59394
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 3
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;web1.dns.lab.			IN	A
+
+;; ANSWER SECTION:
+web1.dns.lab.		3600	IN	A	192.168.50.15
+
+;; AUTHORITY SECTION:
+dns.lab.		3600	IN	NS	ns02.dns.lab.
+dns.lab.		3600	IN	NS	ns01.dns.lab.
+
+;; ADDITIONAL SECTION:
+ns01.dns.lab.		3600	IN	A	192.168.50.10
+ns02.dns.lab.		3600	IN	A	192.168.50.11
+
+;; Query time: 1 msec
+;; SERVER: 192.168.50.10#53(192.168.50.10)
+;; WHEN: Tue Dec 13 11:33:08 UTC 2022
+;; MSG SIZE  rcvd: 127
+
+[vagrant@client2 ~]$ dig @192.168.50.10 web2.dns.lab
+
+; <<>> DiG 9.11.4-P2-RedHat-9.11.4-26.P2.el7_9.10 <<>> @192.168.50.10 web2.dns.lab
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 14621
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 3
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;web2.dns.lab.			IN	A
+
+;; ANSWER SECTION:
+web2.dns.lab.		3600	IN	A	192.168.50.16
+
+;; AUTHORITY SECTION:
+dns.lab.		3600	IN	NS	ns01.dns.lab.
+dns.lab.		3600	IN	NS	ns02.dns.lab.
+
+;; ADDITIONAL SECTION:
+ns01.dns.lab.		3600	IN	A	192.168.50.10
+ns02.dns.lab.		3600	IN	A	192.168.50.11
+
+;; Query time: 1 msec
+;; SERVER: 192.168.50.10#53(192.168.50.10)
+;; WHEN: Tue Dec 13 11:33:11 UTC 2022
+;; MSG SIZE  rcvd: 127
+```
+**Ответ есть на оба запроса**
 
 ### Проверим работу ns02:  
 ```
