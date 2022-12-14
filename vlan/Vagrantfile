@@ -1,0 +1,46 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+    config.vm.box = "almalinux/8"
+    
+    config.vm.provision "ansible" do |ansible|
+      ansible.playbook = "provisioning/playbook.yml"
+#      ansible.inventory_path = "provisioning/hosts"
+      ansible.become = "true"
+    end
+  
+    config.vm.define "inetRouter" do |ir|
+      ir.vm.network "private_network", adapter: 2, auto_config: false, virtualbox__intnet: "bond0"
+      ir.vm.network "private_network", adapter: 3, auto_config: false, virtualbox__intnet: "bond0"
+      ir.vm.hostname = "inetRouter"
+    end
+  
+    config.vm.define "centralRouter" do |cr|
+      cr.vm.network "private_network", adapter: 2, auto_config: false, virtualbox__intnet: "bond0"
+      cr.vm.network "private_network", adapter: 3, auto_config: false, virtualbox__intnet: "bond0"
+      cr.vm.network "private_network", adapter: 4, auto_config: false, virtualbox__intnet: "vlan"
+      cr.vm.hostname = "centralRouter"
+    end
+
+    config.vm.define "server1" do |srv|
+      srv.vm.network "private_network", adapter: 2, auto_config: false, virtualbox__intnet: "vlan"
+      srv.vm.hostname = "server1"
+    end
+    
+    config.vm.define "client1" do |client|
+      client.vm.network "private_network", adapter: 2, auto_config: false, virtualbox__intnet: "vlan"
+      client.vm.hostname = "client1"
+    end
+
+    config.vm.define "server2" do |srv|
+      srv.vm.network "private_network", adapter: 2, auto_config: false, virtualbox__intnet: "vlan"
+      srv.vm.hostname = "server2"
+    end
+
+    config.vm.define "client2" do |client|
+      client.vm.network "private_network", adapter: 2, auto_config: false, virtualbox__intnet: "vlan"
+      client.vm.hostname = "client2"
+    end
+    
+  end

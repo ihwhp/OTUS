@@ -1,0 +1,156 @@
+---
+- name: Install tcpdump
+  hosts: all
+  become: yes
+  tasks:
+
+  - name: Install needed packages
+    package:
+      name:
+        - NetworkManager-libnm
+        - nm-connection-editor
+        - tcpdump
+      state: present
+
+- name: Configure Client 1
+  hosts: client1
+  become: yes
+  vars:
+    vlan_id: 100
+    dev_id: enp0s8
+    ip_addr: 10.10.10.1
+  tasks:
+
+  - name: Install network-scripts
+    dnf:
+      name: network-scripts
+      state: present
+
+  - name: Copy ifcfg-vlan config
+    template:
+      src: ifcfg-vlan.conf.j2
+      dest: /etc/sysconfig/network-scripts/ifcfg-vlan100
+
+  - name: Up Dev Vlan100
+    command: ifup vlan100
+
+- name: Configure Server 1
+  hosts: server1
+  become: yes
+  tasks:
+
+  - name: Configure interface Vlan100
+    nmcli:
+      type: vlan
+      vlandev: enp0s8
+      conn_name: enp0s8.100
+      vlanid: 100
+      ip4: 10.10.10.254/24
+      state: present
+
+- name: Configure Client 2
+  hosts: client2
+  become: yes
+  vars:
+    vlan_id: 200
+    dev_id: enp0s8
+    ip_addr: 10.10.10.1
+  tasks:
+
+  - name: Install network-scripts
+    dnf:
+      name: network-scripts
+      state: present
+
+  - name: Copy ifcfg-vlan config
+    template:
+      src: ifcfg-vlan.conf.j2
+      dest: /etc/sysconfig/network-scripts/ifcfg-vlan200
+
+  - name: Up Dev Vlan200
+    command: ifup vlan200
+
+- name: Configure Server 2
+  hosts: server2
+  become: yes
+  tasks:
+
+- name: Configure Central Router
+  hosts: centralRouter
+  become: yes
+  vars:
+    ip_addr: 192.168.255.2
+  tasks:
+
+  - name: Install network-scripts
+    dnf:
+      name: network-scripts
+      state: present
+
+  - name: Copy ifcfg-vlan config
+    template:
+      src: ifcfg-bond0.conf.j2
+      dest: /etc/sysconfig/network-scripts/ifcfg-bond0
+
+  - name: Copy Devs
+    copy:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+    with_items:
+      - { src: 'ifcfg-enp0s8', dest: '/etc/sysconfig/network-scripts/' }
+      - { src: 'ifcfg-enp0s9', dest: '/etc/sysconfig/network-scripts/' }
+
+  - name: Configure interface Vlan100
+    nmcli:
+      type: vlan
+      vlandev: enp0s10
+      conn_name: enp0s10.100
+      vlanid: 100
+      state: present
+
+  - name: Configure interface Vlan200
+    nmcli:
+      type: vlan
+      vlandev: enp0s10
+      conn_name: enp0s10.200
+      vlanid: 200
+      state: present
+
+  - name: Restart server
+    reboot:
+      reboot_timeout: 120
+
+  - name: Up Dev Bond0
+    command: ifup bond0
+
+- name: Configure Inet Router
+  hosts: inetRouter
+  become: yes
+  vars:
+    ip_addr: 192.168.255.1
+  tasks:
+
+  - name: Install network-scripts
+    dnf:
+      name: network-scripts
+      state: present
+
+  - name: Copy ifcfg-vlan config
+    template:
+      src: ifcfg-bond0.conf.j2
+      dest: /etc/sysconfig/network-scripts/ifcfg-bond0
+
+  - name: Copy Devs
+    copy:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+    with_items:
+      - { src: 'ifcfg-enp0s8', dest: '/etc/sysconfig/network-scripts/' }
+      - { src: 'ifcfg-enp0s9', dest: '/etc/sysconfig/network-scripts/' }
+
+  - name: Restart server
+    reboot:
+      reboot_timeout: 120
+
+  - name: Up Dev Bond0
+    command: ifup bond0

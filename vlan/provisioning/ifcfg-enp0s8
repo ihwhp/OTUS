@@ -1,0 +1,9 @@
+TYPE=Ethernet
+NAME=enp0s8
+DEVICE=enp0s8
+ONBOOT=yes
+BOOTPROTO=none
+MASTER=bond0
+SLAVE=yes
+NM_CONTROLLED=no
+USERCTL=no

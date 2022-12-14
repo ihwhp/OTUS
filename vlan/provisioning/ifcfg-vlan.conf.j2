@@ -1,0 +1,12 @@
+ONBOOT=yes
+TYPE=Ethernet
+VLAN=yes
+VLAN_NAME_TYPE=DEV_PLUS_VID_NO_PAD
+DEVICE=vlan{{ vlan_id }}
+PHYSDEV={{ dev_id }}
+VLAN_ID={{ vlan_id }}
+BOOTPROTO=static
+IPADDR={{ ip_addr }}
+NETMASK=255.255.255.0
+NM_CONTROLLED=no
+ONBOOT=yes
